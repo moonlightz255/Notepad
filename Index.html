@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Odds Notepad · Stats & Storage</title>
+  <!-- React & ReactDOM CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- Babel for JSX (development) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* BLUE & WHITE gradient only (left → right) */
+      background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 30%, #ffffff 100%);
+      padding: 2rem;
+    }
+
+    #root {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* main notepad card */
+    .notepad {
+      background: #fffdf5; 
+      border-radius: 28px;
+      box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2), 0 6px 12px rgba(0, 0, 0, 0.1);
+      padding: 1.8rem 1.8rem 1.8rem 1rem;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      backdrop-filter: blur(2px);
+      transition: all 0.2s ease;
+    }
+
+    /* header stats area */
+    .stats-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-left: 2.5rem; /* align with lines */
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      border-bottom: 3px dashed #3b82f6;
+      padding-bottom: 0.75rem;
+    }
+
+    .stats-header h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stats-header h1 span {
+      font-size: 1.5rem;
+    }
+
+    .badge {
+      background: #dbeafe;
+      color: #1e3a8a;
+      padding: 0.35rem 1rem;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      box-shadow: inset 0 -2px 0 #93c5fd;
+      border: 1px solid #60a5fa;
+    }
+
+    /* main notepad body with lines & numbers */
+    .notepad-body {
+      display: flex;
+      position: relative;
+      background: #fffef9;
+      border-radius: 16px;
+      border: 1px solid #bfdbfe;
+      box-shadow: inset 0 0 0 1px #dbeafe, 0 4px 8px rgba(0,0,0,0.02);
+      overflow: hidden;
+    }
+
+    /* ----- LEFT NUMBERS COLUMN: BLUE & WHITE GRADIENT ----- */
+    .line-numbers {
+      width: 3.2rem;
+      /* blue to white gradient (top to bottom) */
+      background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 35%, #ffffff 100%);
+      border-right: 2px solid #2563eb;
+      display: flex;
+      flex-direction: column;
+      padding-top: 0.75rem;
+      user-select: none;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      font-weight: 700;
+      /* default text color – will be overridden for contrast */
+      color: #0f172a;
+      text-align: right;
+      padding-right: 0.5rem;
+      box-shadow: inset -2px 0 8px rgba(37, 99, 235, 0.3);
+      transition: all 0.1s;
+      overflow: hidden;
+    }
+
+    /* each line number – ensure visibility on gradient */
+    .line-number {
+      line-height: 1.65rem;
+      height: 1.65rem;
+      /* dynamic text shadow for readability */
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
+      color: #0a1e4a; /* deep blue base */
+    }
+
+    /* make top numbers (on darker blue) white for contrast */
+    .line-number:nth-child(-n+8) {
+      color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+    .line-number:nth-child(n+9):nth-child(-n+16) {
+      color: #e0e7ff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+    /* middle numbers (lighter blue / near white) use dark blue */
+    .line-number:nth-child(n+17):nth-child(-n+24) {
+      color: #1e3a8a;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+    }
+    /* bottom numbers on white background use dark gray/blue */
+    .line-number:nth-child(n+25) {
+      color: #1e293b;
+      text-shadow: none;
+    }
+
+    /* actual textarea area with lines background */
+    .textarea-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .notepad-textarea {
+      width: 100%;
+      min-height: 520px;
+      padding: 0.75rem 1rem 0.75rem 0.75rem;
+      font-family: 'Courier New', 'Fira Code', monospace;
+      font-size: 1rem;
+      line-height: 1.65rem;
+      border: none;
+      outline: none;
+      resize: vertical;
+      background: transparent;
+      color: #2c1e0e;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      z-index: 2;
+      position: relative;
+      background-attachment: local;
+    }
+
+    /* create horizontal ruled lines using background */
+    .notepad-textarea {
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent calc(1.65rem - 1px),
+        #dbeafe calc(1.65rem - 1px),
+        #dbeafe 1.65rem
+      );
+      background-size: 100% 1.65rem;
+      background-position: 0 0.75rem;
+    }
+
+    /* placeholder styling */
+    .notepad-textarea::placeholder {
+      color: #93c5fd;
+      font-style: italic;
+      font-weight: 400;
+      opacity: 0.8;
+    }
+
+    /* stats footer */
+    .stats-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.25rem;
+      padding-left: 2.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .stat-item {
+      background: #eff6ff;
+      border-radius: 40px;
+      padding: 0.4rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1e3a8a;
+      border: 1px solid #bfdbfe;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .stat-item i {
+      font-style: normal;
+      font-size: 1.1rem;
+    }
+
+    /* button group for actions */
+    .button-group {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* CLEAR ALL button (more prominent, red-ish for destructive action) */
+    .clear-all-button {
+      background: #fee2e2;
+      border: 1.5px solid #dc2626;
+      color: #991b1b;
+      font-weight: 700;
+      padding: 0.5rem 1.4rem;
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.15s;
+      box-shadow: 0 3px 0 #b91c1c;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .clear-all-button:hover {
+      background: #fecaca;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 0 #b91c1c;
+    }
+
+    .clear-all-button:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #b91c1c;
+    }
+
+    /* existing clear notes button (softer) */
+    .clear-button {
+      background: #eff6ff;
+      border: 1.5px solid #2563eb;
+      color: #1e3a8a;
+      font-weight: 700;
+      padding: 0.5rem 1.4rem;
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.15s;
+      box-shadow: 0 3px 0 #1e40af;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .clear-button:hover {
+      background: #dbeafe;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 0 #1e40af;
+    }
+
+    .clear-button:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #1e40af;
+    }
+
+    /* small note text */
+    .storage-note {
+      font-size: 0.75rem;
+      color: #1e3a8a;
+      background: #eff6ff;
+      padding: 0.25rem 0.75rem;
+      border-radius: 30px;
+      font-weight: 500;
+      border: 1px solid #bfdbfe;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .storage-note::before {
+      content: "💾";
+      font-size: 0.9rem;
+    }
+
+    /* responsive adjustments */
+    @media (max-width: 600px) {
+      body { padding: 1rem; }
+      .notepad { padding: 1rem 0.8rem 1rem 0.5rem; }
+      .stats-header { padding-left: 1.5rem; }
+      .stats-header h1 { font-size: 1.4rem; }
+      .stats-footer { padding-left: 1.5rem; }
+      .line-numbers { width: 2.6rem; font-size: 0.75rem; padding-right: 0.3rem; }
+      .notepad-textarea { font-size: 0.9rem; line-height: 1.5rem; background-size: 100% 1.5rem; }
+      .line-number { line-height: 1.5rem; height: 1.5rem; }
+      .button-group { width: 100%; justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- helper: generate line numbers based on visible lines ---
+    const getLineCount = (text, minLines = 24) => {
+      if (!text) return minLines;
+      const lines = text.split('\n').length;
+      return Math.max(lines, minLines);
+    };
+
+    const App = () => {
+      // load from localStorage or default sample text
+      const [notes, setNotes] = useState(() => {
+        try {
+          const saved = localStorage.getItem('bettingOddsNotes');
+          if (saved !== null) return saved;
+        } catch (e) {
+          console.warn('localStorage access error', e);
+        }
+        // default starter content (betting odds style)
+        return `1.92  |  Arsenal vs Chelsea   (Premier League)  @ 1.92  |  3.40  |  4.20\n2.05  |  Lakers -3.5  vs Celtics   (NBA)  @ 2.05\n1.75  |  Over 2.5 goals  Bayern vs Dortmund\n2.45  |  Djokovic to win 1st set  @ 2.45\n3.10  |  Yankees -1.5  @ 3.10\n1.60  |  Both teams to score  Inter vs Milan\n2.80  |  Chiefs +4.5  @ 2.80\n1.98  |  Real Madrid -1.5  @ 1.98\n2.15  |  Nadal -2.5 games  @ 2.15\n1.71  |  Over 220.5 pts  Warriors vs Suns`;
+      });
+
+      const [lineCount, setLineCount] = useState(24);
+      const textareaRef = useRef(null);
+
+      // save to localStorage whenever notes change
+      useEffect(() => {
+        try {
+          localStorage.setItem('bettingOddsNotes', notes);
+        } catch (e) {
+          console.warn('Could not save to localStorage', e);
+        }
+        // update line numbers based on content & minimum lines
+        const newCount = getLineCount(notes, 24);
+        setLineCount(newCount);
+      }, [notes]);
+
+      // handle text changes
+      const handleChange = (e) => {
+        setNotes(e.target.value);
+      };
+
+      // clear all notes (with confirmation) — same as clear button but can be reused
+      const handleClearAll = () => {
+        if (window.confirm('⚠️ Clear ALL notes? This cannot be undone.')) {
+          setNotes('');
+          textareaRef.current?.focus();
+        }
+      };
+
+      // character & line stats
+      const charCount = notes.length;
+      const lineCountActual = notes.split('\n').length;
+
+      // generate array for line numbers
+      const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
+
+      // synchronize scroll: line numbers scroll with textarea
+      useEffect(() => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+        const lineNumbersDiv = document.querySelector('.line-numbers');
+        if (!lineNumbersDiv) return;
+        
+        const handleScroll = () => {
+          lineNumbersDiv.scrollTop = textarea.scrollTop;
+        };
+        textarea.addEventListener('scroll', handleScroll);
+        return () => textarea.removeEventListener('scroll', handleScroll);
+      }, []);
+
+      return (
+        <div className="notepad">
+          <div className="stats-header">
+            <h1>
+              <span>📊</span> Odds Notepad
+            </h1>
+            <div className="badge">betting lines · local storage</div>
+          </div>
+
+          <div className="notepad-body">
+            {/* left column with line numbers — blue & white gradient */}
+            <div className="line-numbers" style={{ overflow: 'hidden' }}>
+              {lineNumbers.map((num) => (
+                <div key={num} className="line-number">
+                  {num}
+                </div>
+              ))}
+            </div>
+
+            <div className="textarea-wrapper">
+              <textarea
+                ref={textareaRef}
+                className="notepad-textarea"
+                value={notes}
+                onChange={handleChange}
+                placeholder="Write your betting odds, lines, and stats here...&#10;Example:&#10;1.92  Arsenal vs Chelsea  @ 1.92&#10;2.05  Lakers -3.5  @ 2.05"
+                spellCheck="false"
+              />
+            </div>
+          </div>
+
+          <div className="stats-footer">
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div className="stat-item">
+                <i>📝</i> {lineCountActual} {lineCountActual === 1 ? 'line' : 'lines'}
+              </div>
+              <div className="stat-item">
+                <i>🔤</i> {charCount} chars
+              </div>
+              <div className="storage-note">autosaved</div>
+            </div>
+            <div className="button-group">
+              <button className="clear-button" onClick={handleClearAll}>
+                <span>🧹</span> Clear notes
+              </button>
+              <button className="clear-all-button" onClick={handleClearAll}>
+                <span>🗑️</span> Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+  </html>
