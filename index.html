@@ -1,19 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Odds Notepad · Stats & Storage</title>
-  <!-- React & ReactDOM CDN (production build for better performance) -->
+  <title>Odds Notepad · Colored Lines</title>
+
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <!-- Babel for JSX (needed for in-browser compilation) -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+    }
+
+    html,
+    body,
+    #root {
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: isolate !important;
+      writing-mode: horizontal-tb !important;
     }
 
     body {
@@ -22,9 +30,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      /* BLUE & WHITE gradient only (left → right) */
-      background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 30%, #ffffff 100%);
-      padding: 2rem;
+      background: #f0f4ff;
+      padding: 1.5rem;
     }
 
     #root {
@@ -33,28 +40,28 @@
       margin: 0 auto;
     }
 
-    /* main notepad card */
     .notepad {
-      background: #fffdf5; 
+      background: #fffdf5;
       border-radius: 28px;
-      box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2), 0 6px 12px rgba(0, 0, 0, 0.1);
-      padding: 1.8rem 1.8rem 1.8rem 1rem;
-      border: 1px solid rgba(59, 130, 246, 0.4);
-      backdrop-filter: blur(2px);
-      transition: all 0.2s ease;
+      box-shadow:
+        0 20px 35px rgba(0, 0, 0, 0.15),
+        0 6px 12px rgba(0, 0, 0, 0.08);
+      padding: 1.8rem;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      direction: ltr !important;
+      text-align: left !important;
     }
 
-    /* header stats area */
     .stats-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
-      padding-left: 2.5rem;
       flex-wrap: wrap;
       gap: 0.75rem;
       border-bottom: 3px dashed #3b82f6;
       padding-bottom: 0.75rem;
+      direction: ltr !important;
     }
 
     .stats-header h1 {
@@ -64,14 +71,11 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      letter-spacing: -0.5px;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-    }
-
-    .stats-header h1 span {
-      font-size: 1.5rem;
+      direction: ltr !important;
+      text-align: left !important;
     }
 
     .badge {
@@ -81,119 +85,146 @@
       border-radius: 60px;
       font-weight: 600;
       font-size: 0.85rem;
-      box-shadow: inset 0 -2px 0 #93c5fd;
       border: 1px solid #60a5fa;
+      direction: ltr !important;
+      text-align: left !important;
     }
 
-    /* main notepad body with lines & numbers */
     .notepad-body {
-      display: flex;
-      position: relative;
-      background: #fffef9;
+      background: #ffffff;
       border-radius: 16px;
       border: 1px solid #bfdbfe;
-      box-shadow: inset 0 0 0 1px #dbeafe, 0 4px 8px rgba(0,0,0,0.02);
       overflow: hidden;
+      height: 520px;
+      direction: ltr !important;
     }
 
-    /* ----- LEFT NUMBERS COLUMN: BLUE & WHITE GRADIENT ----- */
-    .line-numbers {
-      width: 3.2rem;
-      /* blue to white gradient (top to bottom) */
-      background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 35%, #ffffff 100%);
-      border-right: 2px solid #2563eb;
-      display: flex;
-      flex-direction: column;
-      padding-top: 0.75rem;
-      user-select: none;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #0f172a;
-      text-align: right;
-      padding-right: 0.5rem;
-      box-shadow: inset -2px 0 8px rgba(37, 99, 235, 0.3);
-      transition: all 0.1s;
-      overflow: hidden;
+    .editor-scroll {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: #ffffff;
+      direction: ltr !important;
     }
 
-    /* each line number – ensure visibility on gradient */
-    .line-number {
-      line-height: 1.65rem;
-      height: 1.65rem;
-      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
-      color: #0a1e4a;
+    .editor-scroll::-webkit-scrollbar {
+      width: 8px;
     }
 
-    /* make top numbers (on darker blue) white for contrast */
-    .line-number:nth-child(-n+8) {
-      color: #ffffff;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-    }
-    .line-number:nth-child(n+9):nth-child(-n+16) {
-      color: #e0e7ff;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-    }
-    .line-number:nth-child(n+17):nth-child(-n+24) {
-      color: #1e3a8a;
-      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
-    }
-    .line-number:nth-child(n+25) {
-      color: #1e293b;
-      text-shadow: none;
+    .editor-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
     }
 
-    /* actual textarea area with lines background */
-    .textarea-wrapper {
-      flex: 1;
-      position: relative;
-    }
-
-    .notepad-textarea {
-      width: 100%;
-      min-height: 520px;
-      padding: 0.75rem 1rem 0.75rem 0.75rem;
+    .editor {
+      padding: 0.75rem 1rem;
       font-family: 'Courier New', 'Fira Code', monospace;
       font-size: 1rem;
       line-height: 1.65rem;
-      border: none;
-      outline: none;
-      resize: vertical;
-      background: transparent;
-      color: #2c1e0e;
+      color: #1e293b;
       font-weight: 500;
-      letter-spacing: 0.2px;
-      z-index: 2;
+      min-height: 100%;
+      outline: none;
+
+      /* Force English-style left-to-right writing */
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: isolate !important;
+      writing-mode: horizontal-tb !important;
+    }
+
+    .line-row {
+      display: block;
+      width: 100%;
+      line-height: 1.65rem;
+      height: 1.65rem;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+      padding: 0 0.5rem;
+      overflow: hidden;
       position: relative;
-      background-attachment: local;
-      /* create horizontal ruled lines */
-      background-image: repeating-linear-gradient(
-        to bottom,
-        transparent,
-        transparent calc(1.65rem - 1px),
-        #dbeafe calc(1.65rem - 1px),
-        #dbeafe 1.65rem
-      );
-      background-size: 100% 1.65rem;
-      background-position: 0 0.75rem;
+
+      /* Force every row to write left-to-right */
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: isolate !important;
+      writing-mode: horizontal-tb !important;
     }
 
-    .notepad-textarea::placeholder {
-      color: #93c5fd;
+    .line-text {
+      display: block;
+      width: 100%;
+      height: 100%;
+      outline: none;
+      cursor: text;
+
+      font-family: 'Courier New', 'Fira Code', monospace;
+      font-size: inherit;
+      font-weight: inherit;
+      line-height: 1.65rem;
+      color: inherit;
+
+      white-space: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+
+      /*
+       * These rules make typing behave like an English keyboard:
+       * characters begin on the left and continue toward the right.
+       */
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: isolate !important;
+      writing-mode: horizontal-tb !important;
+
+      /* Prevent ligatures from changing the visual typing position */
+      font-variant-ligatures: none;
+      -webkit-font-variant-ligatures: none;
+    }
+
+    .line-text:focus {
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: isolate !important;
+      writing-mode: horizontal-tb !important;
+    }
+
+    .line-text::-webkit-scrollbar {
+      display: none;
+    }
+
+    .line-text::selection {
+      background: #93c5fd;
+      color: #0f172a;
+    }
+
+    /* Force any browser-created editable content to remain LTR */
+    .line-text *,
+    .line-text span,
+    .line-text div,
+    .line-text br {
+      direction: ltr !important;
+      text-align: left !important;
+      unicode-bidi: isolate !important;
+      writing-mode: horizontal-tb !important;
+    }
+
+    .editor .line-row:only-child .line-text:empty::before {
+      content: attr(data-placeholder);
+      color: #94a3b8;
       font-style: italic;
-      font-weight: 400;
-      opacity: 0.8;
+      pointer-events: none;
     }
 
-    /* stats footer */
     .stats-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-top: 1.25rem;
-      padding-left: 2.5rem;
       flex-wrap: wrap;
       gap: 1rem;
+      direction: ltr !important;
     }
 
     .stat-item {
@@ -204,246 +235,595 @@
       font-weight: 600;
       color: #1e3a8a;
       border: 1px solid #bfdbfe;
-      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.15);
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      direction: ltr !important;
     }
 
-    .stat-item i {
-      font-style: normal;
-      font-size: 1.1rem;
-    }
-
-    /* button group for actions */
-    .button-group {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    /* CLEAR ALL button (more prominent, red-ish for destructive action) */
-    .clear-all-button {
-      background: #fee2e2;
-      border: 1.5px solid #dc2626;
-      color: #991b1b;
-      font-weight: 700;
-      padding: 0.5rem 1.4rem;
-      border-radius: 40px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.15s;
-      box-shadow: 0 3px 0 #b91c1c;
-      letter-spacing: 0.3px;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .clear-all-button:hover {
-      background: #fecaca;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 0 #b91c1c;
-    }
-
-    .clear-all-button:active {
-      transform: translateY(2px);
-      box-shadow: 0 1px 0 #b91c1c;
-    }
-
-    /* existing clear notes button (softer) */
-    .clear-button {
-      background: #eff6ff;
-      border: 1.5px solid #2563eb;
-      color: #1e3a8a;
-      font-weight: 700;
-      padding: 0.5rem 1.4rem;
-      border-radius: 40px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.15s;
-      box-shadow: 0 3px 0 #1e40af;
-      letter-spacing: 0.3px;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .clear-button:hover {
-      background: #dbeafe;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 0 #1e40af;
-    }
-
-    .clear-button:active {
-      transform: translateY(2px);
-      box-shadow: 0 1px 0 #1e40af;
-    }
-
-    /* small note text */
     .storage-note {
       font-size: 0.75rem;
       color: #1e3a8a;
       background: #eff6ff;
       padding: 0.25rem 0.75rem;
       border-radius: 30px;
-      font-weight: 500;
       border: 1px solid #bfdbfe;
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      direction: ltr !important;
     }
 
     .storage-note::before {
       content: "💾";
-      font-size: 0.9rem;
     }
 
-    /* responsive adjustments */
+    .button-group {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      direction: ltr !important;
+    }
+
+    .clear-button,
+    .clear-all-button {
+      font-family: inherit;
+      font-weight: 700;
+      padding: 0.5rem 1.4rem;
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s;
+      direction: ltr !important;
+    }
+
+    .clear-button {
+      background: #eff6ff;
+      border: 1.5px solid #2563eb;
+      color: #1e3a8a;
+      box-shadow: 0 3px 0 #1e40af;
+    }
+
+    .clear-all-button {
+      background: #fee2e2;
+      border: 1.5px solid #dc2626;
+      color: #991b1b;
+      box-shadow: 0 3px 0 #b91c1c;
+    }
+
+    .clear-button:hover,
+    .clear-all-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .clear-button:active,
+    .clear-all-button:active {
+      transform: translateY(2px);
+    }
+
+    .clear-button:focus-visible,
+    .clear-all-button:focus-visible,
+    .line-text:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+
     @media (max-width: 600px) {
-      body { padding: 1rem; }
-      .notepad { padding: 1rem 0.8rem 1rem 0.5rem; }
-      .stats-header { padding-left: 1.5rem; }
-      .stats-header h1 { font-size: 1.4rem; }
-      .stats-footer { padding-left: 1.5rem; }
-      .line-numbers { width: 2.6rem; font-size: 0.75rem; padding-right: 0.3rem; }
-      .notepad-textarea { font-size: 0.9rem; line-height: 1.5rem; background-size: 100% 1.5rem; }
-      .line-number { line-height: 1.5rem; height: 1.5rem; }
-      .button-group { width: 100%; justify-content: flex-start; }
+      body {
+        padding: 1rem;
+      }
+
+      .notepad {
+        padding: 1.2rem 1rem;
+      }
+
+      .stats-header h1 {
+        font-size: 1.4rem;
+      }
+
+      .editor {
+        font-size: 0.9rem;
+        line-height: 1.5rem;
+      }
+
+      .line-row {
+        line-height: 1.5rem;
+        height: 1.5rem;
+      }
+
+      .line-text {
+        line-height: 1.5rem;
+      }
+
+      .notepad-body {
+        height: 420px;
+      }
     }
   </style>
 </head>
+
 <body>
   <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+  <script>
+    const {
+      useState,
+      useEffect,
+      useRef,
+      createElement: h
+    } = React;
 
-    // --- helper: generate line numbers based on visible lines ---
-    const getLineCount = (text, minLines = 24) => {
-      if (!text) return minLines;
-      const lines = text.split('\n').length;
-      return Math.max(lines, minLines);
-    };
+    const COLOR_PALETTE = [
+      '#fde047',
+      '#60a5fa',
+      '#4ade80',
+      '#bef264',
+      '#d1d5db',
+      '#fb923c',
+      '#f9a8d4',
+      '#c084fc',
+      '#e879f9',
+      '#000000',
+      '#ffd700'
+    ];
 
-    const App = () => {
-      // load from localStorage or default sample text
-      const [notes, setNotes] = useState(() => {
+    const DEFAULT_LINES = [
+      {
+        text: '1.92  |  Arsenal vs Chelsea  @ 1.92',
+        color: null
+      },
+      {
+        text: '2.05  |  Lakers -3.5  @ 2.05',
+        color: null
+      },
+      {
+        text: '1.75  |  Over 2.5 goals  Bayern vs Dortmund',
+        color: null
+      },
+      {
+        text: '2.45  |  Djokovic to win 1st set  @ 2.45',
+        color: null
+      },
+      {
+        text: '3.10  |  Yankees -1.5  @ 3.10',
+        color: null
+      }
+    ];
+
+    const STORAGE_KEY = 'bettingOddsLinesV10';
+
+    function pickRandomColor() {
+      return COLOR_PALETTE[
+        Math.floor(Math.random() * COLOR_PALETTE.length)
+      ];
+    }
+
+    function App() {
+      const [lines, setLines] = useState(function () {
         try {
-          const saved = localStorage.getItem('bettingOddsNotes');
-          if (saved !== null) return saved;
-        } catch (e) {
-          console.warn('localStorage access error', e);
+          const saved = localStorage.getItem(STORAGE_KEY);
+
+          if (saved) {
+            const parsed = JSON.parse(saved);
+
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              return parsed.map(function (line) {
+                return {
+                  text: typeof line.text === 'string' ? line.text : '',
+                  color: line.color || null
+                };
+              });
+            }
+          }
+        } catch (error) {
+          // Use default lines if local storage is unavailable.
         }
-        // default starter content (betting odds style)
-        return `1.92  |  Arsenal vs Chelsea   (Premier League)  @ 1.92  |  3.40  |  4.20\n2.05  |  Lakers -3.5  vs Celtics   (NBA)  @ 2.05\n1.75  |  Over 2.5 goals  Bayern vs Dortmund\n2.45  |  Djokovic to win 1st set  @ 2.45\n3.10  |  Yankees -1.5  @ 3.10\n1.60  |  Both teams to score  Inter vs Milan\n2.80  |  Chiefs +4.5  @ 2.80\n1.98  |  Real Madrid -1.5  @ 1.98\n2.15  |  Nadal -2.5 games  @ 2.15\n1.71  |  Over 220.5 pts  Warriors vs Suns`;
+
+        return DEFAULT_LINES;
       });
 
-      const [lineCount, setLineCount] = useState(24);
-      const textareaRef = useRef(null);
+      const editorRef = useRef(null);
 
-      // save to localStorage whenever notes change
-      useEffect(() => {
+      useEffect(function () {
         try {
-          localStorage.setItem('bettingOddsNotes', notes);
-        } catch (e) {
-          console.warn('Could not save to localStorage', e);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
+        } catch (error) {
+          // Ignore storage errors.
         }
-        // update line numbers based on content & minimum lines
-        const newCount = getLineCount(notes, 24);
-        setLineCount(newCount);
-      }, [notes]);
+      }, [lines]);
 
-      // handle text changes
-      const handleChange = (e) => {
-        setNotes(e.target.value);
+      const updateLineText = function (index, newText) {
+        const cleanText = String(newText || '')
+          .replace(/[\r\n]+/g, ' ');
+
+        setLines(function (previousLines) {
+          const nextLines = previousLines.slice();
+
+          while (nextLines.length <= index) {
+            nextLines.push({
+              text: '',
+              color: null
+            });
+          }
+
+          if (nextLines[index].text === cleanText) {
+            return previousLines;
+          }
+
+          nextLines[index] = Object.assign(
+            {},
+            nextLines[index],
+            {
+              text: cleanText
+            }
+          );
+
+          return nextLines;
+        });
       };
 
-      // clear all notes (with confirmation)
-      const handleClearAll = () => {
-        if (window.confirm('⚠️ Clear ALL notes? This cannot be undone.')) {
-          setNotes('');
-          textareaRef.current?.focus();
+      const focusLineEnd = function (index) {
+        setTimeout(function () {
+          const lineElement = document.querySelector(
+            '[data-line-index="' + index + '"] .line-text'
+          );
+
+          if (!lineElement) {
+            return;
+          }
+
+          lineElement.focus();
+
+          const range = document.createRange();
+
+          if (
+            lineElement.lastChild &&
+            lineElement.lastChild.nodeType === Node.TEXT_NODE
+          ) {
+            range.setStart(
+              lineElement.lastChild,
+              lineElement.lastChild.textContent.length
+            );
+            range.collapse(true);
+          } else {
+            range.selectNodeContents(lineElement);
+            range.collapse(false);
+          }
+
+          const selection = window.getSelection();
+
+          if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+
+          lineElement.scrollIntoView({
+            block: 'nearest',
+            inline: 'nearest'
+          });
+        }, 0);
+      };
+
+      const handleKeyDown = function (event, index) {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          event.stopPropagation();
+
+          const newLine = {
+            text: '',
+            color: pickRandomColor()
+          };
+
+          setLines(function (previousLines) {
+            const nextLines = previousLines.slice();
+            nextLines.splice(index + 1, 0, newLine);
+            return nextLines;
+          });
+
+          focusLineEnd(index + 1);
+          return;
+        }
+
+        if (event.key === 'ArrowDown') {
+          if (index < lines.length - 1) {
+            event.preventDefault();
+            focusLineEnd(index + 1);
+          }
+
+          return;
+        }
+
+        if (event.key === 'ArrowUp') {
+          if (index > 0) {
+            event.preventDefault();
+            focusLineEnd(index - 1);
+          }
+
+          return;
         }
       };
 
-      // character & line stats
-      const charCount = notes.length;
-      const lineCountActual = notes.split('\n').length;
+      const handlePaste = function (event) {
+        event.preventDefault();
 
-      // generate array for line numbers
-      const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
+        const clipboard = event.clipboardData || window.clipboardData;
 
-      // synchronize scroll: line numbers scroll with textarea
-      useEffect(() => {
-        const textarea = textareaRef.current;
-        if (!textarea) return;
-        const lineNumbersDiv = document.querySelector('.line-numbers');
-        if (!lineNumbersDiv) return;
-        
-        const handleScroll = () => {
-          lineNumbersDiv.scrollTop = textarea.scrollTop;
-        };
-        textarea.addEventListener('scroll', handleScroll);
-        return () => textarea.removeEventListener('scroll', handleScroll);
-      }, []);
+        if (!clipboard) {
+          return;
+        }
 
-      return (
-        <div className="notepad">
-          <div className="stats-header">
-            <h1>
-              <span>📊</span> Odds Notepad
-            </h1>
-            <div className="badge">betting lines · local storage</div>
-          </div>
+        const pastedText = clipboard
+          .getData('text')
+          .replace(/[\r\n]+/g, ' ');
 
-          <div className="notepad-body">
-            {/* left column with line numbers — blue & white gradient */}
-            <div className="line-numbers" style={{ overflow: 'hidden' }}>
-              {lineNumbers.map((num) => (
-                <div key={num} className="line-number">
-                  {num}
-                </div>
-              ))}
-            </div>
+        /*
+         * Insert plain text only. This prevents pasted Arabic/RTL HTML
+         * formatting from changing the direction of the line.
+         */
+        if (document.execCommand) {
+          document.execCommand(
+            'insertText',
+            false,
+            pastedText
+          );
+        } else {
+          const selection = window.getSelection();
 
-            <div className="textarea-wrapper">
-              <textarea
-                ref={textareaRef}
-                className="notepad-textarea"
-                value={notes}
-                onChange={handleChange}
-                placeholder="Write your betting odds, lines, and stats here...&#10;Example:&#10;1.92  Arsenal vs Chelsea  @ 1.92&#10;2.05  Lakers -3.5  @ 2.05"
-                spellCheck="false"
-              />
-            </div>
-          </div>
+          if (selection && selection.rangeCount > 0) {
+            selection.deleteFromDocument();
+            selection
+              .getRangeAt(0)
+              .insertNode(document.createTextNode(pastedText));
+          }
+        }
+      };
 
-          <div className="stats-footer">
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <div className="stat-item">
-                <i>📝</i> {lineCountActual} {lineCountActual === 1 ? 'line' : 'lines'}
-              </div>
-              <div className="stat-item">
-                <i>🔤</i> {charCount} chars
-              </div>
-              <div className="storage-note">autosaved</div>
-            </div>
-            <div className="button-group">
-              <button className="clear-button" onClick={handleClearAll}>
-                <span>🧹</span> Clear notes
-              </button>
-              <button className="clear-all-button" onClick={handleClearAll}>
-                <span>🗑️</span> Clear All
-              </button>
-            </div>
-          </div>
-        </div>
+      const handleClearAll = function () {
+        if (
+          window.confirm(
+            '⚠️ Clear ALL notes? This cannot be undone.'
+          )
+        ) {
+          setLines([
+            {
+              text: '',
+              color: null
+            }
+          ]);
+
+          focusLineEnd(0);
+        }
+      };
+
+      const totalChars = lines.reduce(function (sum, line) {
+        return sum + (line.text ? line.text.length : 0);
+      }, 0);
+
+      const actualLines = lines.length;
+
+      return h(
+        'div',
+        {
+          className: 'notepad',
+          dir: 'ltr'
+        },
+
+        h(
+          'div',
+          {
+            className: 'stats-header',
+            dir: 'ltr'
+          },
+
+          h(
+            'h1',
+            {
+              dir: 'ltr'
+            },
+            h('span', null, '📊'),
+            ' Odds Notepad'
+          ),
+
+          h(
+            'div',
+            {
+              className: 'badge',
+              dir: 'ltr'
+            },
+            'Press Enter → new line below'
+          )
+        ),
+
+        h(
+          'div',
+          {
+            className: 'notepad-body',
+            dir: 'ltr'
+          },
+
+          h(
+            'div',
+            {
+              className: 'editor-scroll',
+              dir: 'ltr'
+            },
+
+            h(
+              'div',
+              {
+                className: 'editor',
+                ref: editorRef,
+                dir: 'ltr',
+                spellCheck: false
+              },
+
+              lines.map(function (line, index) {
+                const isBlack = line.color === '#000000';
+
+                return h(
+                  'div',
+                  {
+                    key: index,
+                    'data-line-index': index,
+                    className: 'line-row',
+                    dir: 'ltr',
+                    style: line.color
+                      ? {
+                          backgroundColor: line.color,
+                          color: isBlack
+                            ? '#ffffff'
+                            : '#1e293b'
+                        }
+                      : {}
+                  },
+
+                  h(
+                    'div',
+                    {
+                      className: 'line-text',
+
+                      /*
+                       * plaintext-only stops the browser from creating
+                       * nested RTL divs or spans while typing/pasting.
+                       */
+                      contentEditable: 'plaintext-only',
+
+                      suppressContentEditableWarning: true,
+                      spellCheck: false,
+                      dir: 'ltr',
+                      lang: 'en-US',
+                      translate: 'no',
+                      inputMode: 'text',
+                      autoCorrect: 'off',
+                      autoCapitalize: 'off',
+
+                      style: {
+                        direction: 'ltr',
+                        textAlign: 'left',
+                        unicodeBidi: 'isolate',
+                        writingMode: 'horizontal-tb'
+                      },
+
+                      'data-placeholder':
+                        index === 0
+                          ? 'Type here... press Enter to go to next line'
+                          : '',
+
+                      onInput: function (event) {
+                        updateLineText(
+                          index,
+                          event.currentTarget.textContent
+                        );
+                      },
+
+                      onKeyDown: function (event) {
+                        handleKeyDown(event, index);
+                      },
+
+                      onPaste: handlePaste
+                    },
+
+                    line.text
+                  )
+                );
+              })
+            )
+          )
+        ),
+
+        h(
+          'div',
+          {
+            className: 'stats-footer',
+            dir: 'ltr'
+          },
+
+          h(
+            'div',
+            {
+              style: {
+                display: 'flex',
+                gap: '0.75rem',
+                flexWrap: 'wrap',
+                direction: 'ltr'
+              },
+              dir: 'ltr'
+            },
+
+            h(
+              'div',
+              {
+                className: 'stat-item',
+                dir: 'ltr'
+              },
+              '📝 ',
+              actualLines,
+              ' ',
+              actualLines === 1 ? 'line' : 'lines'
+            ),
+
+            h(
+              'div',
+              {
+                className: 'stat-item',
+                dir: 'ltr'
+              },
+              '🔤 ',
+              totalChars,
+              ' chars'
+            ),
+
+            h(
+              'div',
+              {
+                className: 'storage-note',
+                dir: 'ltr'
+              },
+              'autosaved'
+            )
+          ),
+
+          h(
+            'div',
+            {
+              className: 'button-group',
+              dir: 'ltr'
+            },
+
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'clear-button',
+                onClick: handleClearAll,
+                dir: 'ltr'
+              },
+              '🧹 Clear notes'
+            ),
+
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'clear-all-button',
+                onClick: handleClearAll,
+                dir: 'ltr'
+              },
+              '🗑️ Clear All'
+            )
+          )
+        )
       );
-    };
+    }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    const root = ReactDOM.createRoot(
+      document.getElementById('root')
+    );
+
+    root.render(h(App));
   </script>
 </body>
 </html>
