@@ -9,19 +9,11 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html,
-    body,
-    #root {
+    html, body, #root {
       direction: ltr !important;
       text-align: left !important;
-      unicode-bidi: isolate !important;
-      writing-mode: horizontal-tb !important;
     }
 
     body {
@@ -34,21 +26,14 @@
       padding: 1.5rem;
     }
 
-    #root {
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
-    }
+    #root { width: 100%; max-width: 900px; margin: 0 auto; }
 
     .notepad {
       background: #fffdf5;
       border-radius: 28px;
-      box-shadow:
-        0 20px 35px rgba(0, 0, 0, 0.15),
-        0 6px 12px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 20px 35px rgba(0,0,0,0.15), 0 6px 12px rgba(0,0,0,0.08);
       padding: 1.8rem;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      direction: ltr !important;
+      border: 1px solid rgba(59,130,246,0.3);
     }
 
     .stats-header {
@@ -98,11 +83,7 @@
       overflow-x: hidden;
       background: #ffffff;
     }
-
-    .editor-scroll::-webkit-scrollbar {
-      width: 8px;
-    }
-
+    .editor-scroll::-webkit-scrollbar { width: 8px; }
     .editor-scroll::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 10px;
@@ -113,98 +94,57 @@
       font-family: 'Courier New', 'Fira Code', monospace;
       font-size: 1rem;
       line-height: 1.65rem;
-      color: #1e293b;
       font-weight: 500;
       min-height: 100%;
-      direction: ltr !important;
-      text-align: left !important;
-      unicode-bidi: isolate !important;
     }
 
-    /*
-     * The row itself has no background.
-     * This prevents black/colored blocks appearing on the left and right.
-     */
+    /* Row wrapper */
     .line-row {
       display: block;
       width: 100%;
-      min-height: 1.65rem;
+      height: 1.65rem;
       line-height: 1.65rem;
-      padding: 0;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+      margin-bottom: 0;
       overflow: hidden;
-      direction: ltr !important;
-      text-align: left !important;
-      unicode-bidi: isolate !important;
     }
 
-    /*
-     * Only the written text receives the background color.
-     * The empty/current line stays white.
-     */
-    .line-text {
-      display: inline-block;
-      vertical-align: top;
-      max-width: 100%;
-      min-width: 1px;
-      height: 1.65rem;
+    /* ⭐ KEY FIX: use a real <input> — Android does NOT auto-flip these */
+    .line-input {
+      display: block;
+      width: 100%;
+      height: 100%;
       padding: 0 0.5rem;
+      border: none;
+      outline: none;
+      background: transparent;
       border-radius: 4px;
 
-      outline: none;
-      cursor: text;
-      font-family: inherit;
-      font-size: inherit;
-      font-weight: inherit;
+      font-family: 'Courier New', 'Fira Code', monospace;
+      font-size: 1rem;
+      font-weight: 500;
       line-height: 1.65rem;
-      color: #1e293b;
+      color: inherit;
 
-      white-space: nowrap;
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: none;
-
+      /* ⭐ Force LTR on the input itself */
       direction: ltr !important;
       text-align: left !important;
-      unicode-bidi: isolate !important;
+      unicode-bidi: plaintext !important;
       writing-mode: horizontal-tb !important;
 
-      transition: background-color 0.2s ease;
+      /* ⭐ Prevent Android from auto-flipping */
+      -webkit-user-modify: read-write;
     }
 
-    .line-text:focus {
-      direction: ltr !important;
-      text-align: left !important;
-      unicode-bidi: isolate !important;
-    }
-
-    .line-text::-webkit-scrollbar {
-      display: none;
-    }
-
-    .line-text:empty {
-      background: transparent !important;
-    }
-
-    .line-text::selection {
-      background: #93c5fd;
-      color: #0f172a;
-    }
-
-    .line-text *,
-    .line-text span,
-    .line-text div,
-    .line-text br {
-      direction: ltr !important;
-      text-align: left !important;
-      unicode-bidi: isolate !important;
-      writing-mode: horizontal-tb !important;
-    }
-
-    .editor .line-row:first-child .line-text:empty::before {
-      content: attr(data-placeholder);
+    .line-input::placeholder {
       color: #94a3b8;
       font-style: italic;
-      pointer-events: none;
+    }
+
+    .line-input::selection {
+      background: #93c5fd;
+      color: #0f172a;
     }
 
     .stats-footer {
@@ -216,11 +156,7 @@
       gap: 1rem;
     }
 
-    .footer-stats {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
+    .footer-stats { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 
     .stat-item {
       background: #eff6ff;
@@ -246,19 +182,11 @@
       align-items: center;
       gap: 4px;
     }
+    .storage-note::before { content: "💾"; }
 
-    .storage-note::before {
-      content: "💾";
-    }
+    .button-group { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 
-    .button-group {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .clear-button,
-    .clear-all-button {
+    .clear-button, .clear-all-button {
       font-family: inherit;
       font-weight: 700;
       padding: 0.5rem 1.4rem;
@@ -277,7 +205,6 @@
       color: #1e3a8a;
       box-shadow: 0 3px 0 #1e40af;
     }
-
     .clear-all-button {
       background: #fee2e2;
       border: 1.5px solid #dc2626;
@@ -285,54 +212,17 @@
       box-shadow: 0 3px 0 #b91c1c;
     }
 
-    .clear-button:hover,
-    .clear-all-button:hover {
-      transform: translateY(-1px);
-    }
-
-    .clear-button:active,
-    .clear-all-button:active {
-      transform: translateY(2px);
-    }
-
-    .clear-button:focus-visible,
-    .clear-all-button:focus-visible,
-    .line-text:focus-visible {
-      outline: 2px solid #2563eb;
-      outline-offset: 2px;
-    }
+    .clear-button:hover, .clear-all-button:hover { transform: translateY(-1px); }
+    .clear-button:active, .clear-all-button:active { transform: translateY(2px); }
 
     @media (max-width: 600px) {
-      body {
-        padding: 1rem;
-      }
-
-      .notepad {
-        padding: 1.2rem 1rem;
-      }
-
-      .stats-header h1 {
-        font-size: 1.4rem;
-      }
-
-      .editor {
-        font-size: 0.9rem;
-        line-height: 1.5rem;
-      }
-
-      .line-row {
-        min-height: 1.5rem;
-        line-height: 1.5rem;
-      }
-
-      .line-text {
-        height: 1.5rem;
-        line-height: 1.5rem;
-      }
-
-      .notepad-body {
-        height: 420px;
-      }
+      body { padding: 1rem; }
+      .notepad { padding: 1.2rem 1rem; }
+      .stats-header h1 { font-size: 1.4rem; }
+      .editor { font-size: 0.9rem; line-height: 1.5rem; }
+      .line-row { height: 1.5rem; line-height: 1.5rem; }
+      .line-input { font-size: 0.9rem; line-height: 1.5rem; }
+      .notepad-body { height: 420px; }
     }
   </style>
 </head>
@@ -341,88 +231,50 @@
   <div id="root"></div>
 
   <script>
-    const {
-      useState,
-      useEffect,
-      useRef,
-      createElement: h
-    } = React;
+    const { useState, useEffect, useRef, createElement: h } = React;
 
-    /*
-     * Black was removed from the palette so a black background
-     * cannot appear accidentally.
-     */
     const COLOR_PALETTE = [
-      '#fde047',
-      '#93c5fd',
-      '#86efac',
-      '#bef264',
-      '#d1d5db',
-      '#fdba74',
-      '#f9a8d4',
-      '#d8b4fe',
-      '#f0abfc',
-      '#fcd34d'
+      '#fde047', '#93c5fd', '#86efac', '#bef264', '#d1d5db',
+      '#fdba74', '#f9a8d4', '#d8b4fe', '#f0abfc', '#fcd34d'
     ];
 
     const DEFAULT_LINES = [
-      {
-        id: 'line-1',
-        text: '1.92  |  Arsenal vs Chelsea  @ 1.92',
-        color: null
-      },
-      {
-        id: 'line-2',
-        text: '2.05  |  Lakers -3.5  @ 2.05',
-        color: null
-      },
-      {
-        id: 'line-3',
-        text: '1.75  |  Over 2.5 goals  Bayern vs Dortmund',
-        color: null
-      },
-      {
-        id: 'line-4',
-        text: '2.45  |  Djokovic to win 1st set  @ 2.45',
-        color: null
-      },
-      {
-        id: 'line-5',
-        text: '3.10  |  Yankees -1.5  @ 3.10',
-        color: null
-      }
+      { id: 'line-1', text: '1.92  |  Arsenal vs Chelsea  @ 1.92', color: null },
+      { id: 'line-2', text: '2.05  |  Lakers -3.5  @ 2.05', color: null },
+      { id: 'line-3', text: '1.75  |  Over 2.5 goals  Bayern vs Dortmund', color: null },
+      { id: 'line-4', text: '2.45  |  Djokovic to win 1st set  @ 2.45', color: null },
+      { id: 'line-5', text: '3.10  |  Yankees -1.5  @ 3.10', color: null }
     ];
 
-    const STORAGE_KEY = 'bettingOddsLinesV11';
+    const STORAGE_KEY = 'bettingOddsLinesV15';
+
+    // Strip bidi control chars (defense in depth)
+    const BIDI_CHARS = /[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g;
+    function sanitizeText(text) {
+      return String(text || '')
+        .replace(BIDI_CHARS, '')
+        .replace(/[\r\n]+/g, ' ');
+    }
 
     function createLine(text, color) {
       return {
-        id: 'line-' + Date.now() + '-' + Math.random(),
+        id: 'line-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
         text: text || '',
         color: color || null
       };
     }
 
     function pickRandomColor() {
-      return COLOR_PALETTE[
-        Math.floor(Math.random() * COLOR_PALETTE.length)
-      ];
+      return COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)];
     }
 
     function getTextColor(backgroundColor) {
-      if (!backgroundColor) {
-        return '#1e293b';
-      }
-
+      if (!backgroundColor) return '#1e293b';
       const color = backgroundColor.replace('#', '');
-
       const red = parseInt(color.substring(0, 2), 16);
       const green = parseInt(color.substring(2, 4), 16);
       const blue = parseInt(color.substring(4, 6), 16);
-
-      const brightness =
-        (red * 299 + green * 587 + blue * 114) / 1000;
-
+      const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
       return brightness < 150 ? '#ffffff' : '#1e293b';
     }
 
@@ -430,133 +282,84 @@
       const [lines, setLines] = useState(function () {
         try {
           const saved = localStorage.getItem(STORAGE_KEY);
-
           if (saved) {
             const parsed = JSON.parse(saved);
-
             if (Array.isArray(parsed) && parsed.length > 0) {
               return parsed.map(function (line, index) {
                 return {
                   id: line.id || 'saved-line-' + index,
-                  text: typeof line.text === 'string'
-                    ? line.text
-                    : '',
+                  text: sanitizeText(line.text),
                   color: line.color || null
                 };
               });
             }
           }
-        } catch (error) {
-          // Use default lines if storage is unavailable.
-        }
-
+        } catch (error) {}
         return DEFAULT_LINES;
       });
 
-      const editorRef = useRef(null);
+      const linesRef = useRef(lines);
+      linesRef.current = lines;
+      const inputRefs = useRef({});
 
       useEffect(function () {
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
-        } catch (error) {
-          // Ignore storage errors.
-        }
+        } catch (error) {}
       }, [lines]);
 
+      // Update a line's text
       const updateLineText = function (index, newText) {
-        const cleanText = String(newText || '')
-          .replace(/[\r\n]+/g, ' ');
-
+        const cleanText = sanitizeText(newText);
         setLines(function (previousLines) {
+          if (!previousLines[index]) return previousLines;
+          if (previousLines[index].text === cleanText) return previousLines;
           const nextLines = previousLines.slice();
-
-          if (!nextLines[index]) {
-            return previousLines;
-          }
-
-          if (nextLines[index].text === cleanText) {
-            return previousLines;
-          }
-
-          nextLines[index] = Object.assign(
-            {},
-            nextLines[index],
-            {
-              text: cleanText
-            }
-          );
-
+          nextLines[index] = Object.assign({}, nextLines[index], { text: cleanText });
           return nextLines;
         });
       };
 
+      // Focus the input at a given line index, caret at end
       const focusLineEnd = function (index) {
         setTimeout(function () {
-          const lineElement = document.querySelector(
-            '[data-line-index="' + index + '"] .line-text'
-          );
-
-          if (!lineElement) {
-            return;
-          }
-
-          lineElement.focus();
-
-          const range = document.createRange();
-          range.selectNodeContents(lineElement);
-          range.collapse(false);
-
-          const selection = window.getSelection();
-
-          if (selection) {
-            selection.removeAllRanges();
-            selection.addRange(range);
-          }
-
-          lineElement.scrollIntoView({
-            block: 'nearest',
-            inline: 'nearest'
-          });
+          const line = linesRef.current[index];
+          if (!line) return;
+          const input = inputRefs.current[line.id];
+          if (!input) return;
+          input.focus();
+          // Place caret at the end
+          const len = input.value.length;
+          try {
+            input.setSelectionRange(len, len);
+          } catch (e) { /* some browsers */ }
+          input.scrollIntoView({ block: 'nearest', inline: 'nearest' });
         }, 30);
       };
 
       const handleKeyDown = function (event, index) {
+        // ⭐ ENTER — commit current line, insert a new empty colored line below
         if (event.key === 'Enter') {
           event.preventDefault();
           event.stopPropagation();
 
-          const currentText = event.currentTarget.textContent
-            .replace(/[\r\n]+/g, ' ')
-            .trim();
+          const currentText = sanitizeText(event.currentTarget.value).trim();
+
+          const newLine = createLine('', null);
 
           setLines(function (previousLines) {
             const nextLines = previousLines.slice();
 
-            /*
-             * Pressing Enter commits the current words and colors
-             * the current line.
-             */
-            if (currentText.length > 0) {
-              nextLines[index] = Object.assign(
-                {},
-                nextLines[index],
-                {
-                  text: currentText,
-                  color: nextLines[index].color || pickRandomColor()
-                }
-              );
+            // Commit current text, give it a color if it has content
+            if (currentText.length > 0 && nextLines[index]) {
+              nextLines[index] = Object.assign({}, nextLines[index], {
+                text: currentText,
+                color: nextLines[index].color || pickRandomColor()
+              });
             }
 
-            /*
-             * The new line is empty and has no background yet.
-             * It will receive a color when Enter is pressed on it.
-             */
-            nextLines.splice(
-              index + 1,
-              0,
-              createLine('', null)
-            );
-
+            // Insert new blank line below
+            nextLines.splice(index + 1, 0, newLine);
             return nextLines;
           });
 
@@ -564,12 +367,37 @@
           return;
         }
 
+        // ⭐ BACKSPACE on empty line — remove it and jump to previous line's end
+        if (event.key === 'Backspace') {
+          const currentValue = event.currentTarget.value;
+          const selectionStart = event.currentTarget.selectionStart;
+          const selectionEnd = event.currentTarget.selectionEnd;
+          const nothingSelected = selectionStart === selectionEnd;
+          const atStart = selectionStart === 0;
+
+          if (
+            currentValue === '' &&
+            nothingSelected &&
+            atStart &&
+            index > 0 &&
+            linesRef.current.length > 1
+          ) {
+            event.preventDefault();
+            setLines(function (previousLines) {
+              const nextLines = previousLines.slice();
+              nextLines.splice(index, 1);
+              return nextLines;
+            });
+            focusLineEnd(index - 1);
+          }
+          return;
+        }
+
         if (event.key === 'ArrowDown') {
-          if (index < lines.length - 1) {
+          if (index < linesRef.current.length - 1) {
             event.preventDefault();
             focusLineEnd(index + 1);
           }
-
           return;
         }
 
@@ -578,42 +406,14 @@
             event.preventDefault();
             focusLineEnd(index - 1);
           }
-
           return;
         }
-      };
-
-      const handlePaste = function (event) {
-        event.preventDefault();
-
-        const clipboard =
-          event.clipboardData || window.clipboardData;
-
-        if (!clipboard) {
-          return;
-        }
-
-        const pastedText = clipboard
-          .getData('text')
-          .replace(/[\r\n]+/g, ' ');
-
-        document.execCommand(
-          'insertText',
-          false,
-          pastedText
-        );
       };
 
       const handleClearAll = function () {
-        if (
-          window.confirm(
-            '⚠️ Clear ALL notes? This cannot be undone.'
-          )
-        ) {
-          setLines([
-            createLine('', null)
-          ]);
-
+        if (window.confirm('⚠️ Clear ALL notes? This cannot be undone.')) {
+          const fresh = createLine('', null);
+          setLines([fresh]);
           focusLineEnd(0);
         }
       };
@@ -624,195 +424,89 @@
 
       return h(
         'div',
-        {
-          className: 'notepad',
-          dir: 'ltr'
-        },
+        { className: 'notepad', dir: 'ltr' },
 
-        h(
-          'div',
-          {
-            className: 'stats-header'
-          },
-
-          h(
-            'h1',
-            null,
-            h('span', null, '📊'),
-            ' Odds Notepad'
-          ),
-
-          h(
-            'div',
-            {
-              className: 'badge'
-            },
-            'Type → press ↵ to highlight and continue'
-          )
+        h('div', { className: 'stats-header' },
+          h('h1', null, h('span', null, '📊'), ' Odds Notepad'),
+          h('div', { className: 'badge' }, 'Type → press ↵ to start a new line')
         ),
 
-        h(
-          'div',
-          {
-            className: 'notepad-body'
-          },
-
-          h(
-            'div',
-            {
-              className: 'editor-scroll'
-            },
-
-            h(
-              'div',
-              {
-                className: 'editor',
-                ref: editorRef,
-                dir: 'ltr'
-              },
+        h('div', { className: 'notepad-body' },
+          h('div', { className: 'editor-scroll' },
+            h('div', { className: 'editor', dir: 'ltr' },
 
               lines.map(function (line, index) {
-                const hasColor =
-                  Boolean(line.color) && line.text.length > 0;
-
+                const hasColor = Boolean(line.color) && line.text.length > 0;
                 const textStyle = hasColor
-                  ? {
-                      backgroundColor: line.color,
-                      color: getTextColor(line.color)
-                    }
-                  : {
-                      backgroundColor: 'transparent',
-                      color: '#1e293b'
-                    };
+                  ? { backgroundColor: line.color, color: getTextColor(line.color) }
+                  : { backgroundColor: 'transparent', color: '#1e293b' };
 
-                return h(
-                  'div',
-                  {
-                    key: line.id,
-                    'data-line-index': index,
-                    className: 'line-row',
-                    dir: 'ltr'
-                  },
+                return h('div', {
+                  key: line.id,
+                  className: 'line-row',
+                  dir: 'ltr',
+                  style: hasColor ? { backgroundColor: 'transparent' } : {}
+                },
 
-                  h(
-                    'div',
-                    {
-                      className: 'line-text',
-                      contentEditable: true,
-                      suppressContentEditableWarning: true,
-                      spellCheck: false,
-                      dir: 'ltr',
-                      lang: 'en-US',
-                      translate: 'no',
-                      inputMode: 'text',
-                      autoCorrect: 'off',
-                      autoCapitalize: 'off',
-                      style: textStyle,
-
-                      'data-placeholder':
-                        index === 0
-                          ? 'Type here... press ↵ for the next colored line'
-                          : '',
-
-                      onInput: function (event) {
-                        updateLineText(
-                          index,
-                          event.currentTarget.textContent
-                        );
-                      },
-
-                      onKeyDown: function (event) {
-                        handleKeyDown(event, index);
-                      },
-
-                      onPaste: handlePaste
+                  h('input', {
+                    ref: function (el) { inputRefs.current[line.id] = el; },
+                    type: 'text',
+                    className: 'line-input',
+                    value: line.text,
+                    dir: 'ltr',
+                    lang: 'en',
+                    spellCheck: false,
+                    autoComplete: 'off',
+                    autoCorrect: 'off',
+                    autoCapitalize: 'off',
+                    inputMode: 'text',
+                    enterKeyHint: 'next',
+                    style: textStyle,
+                    placeholder: index === 0
+                      ? 'Type here... press Enter for a new colored line'
+                      : '',
+                    onChange: function (event) {
+                      updateLineText(index, event.currentTarget.value);
                     },
-
-                    line.text
-                  )
+                    onKeyDown: function (event) {
+                      handleKeyDown(event, index);
+                    }
+                  })
                 );
               })
             )
           )
         ),
 
-        h(
-          'div',
-          {
-            className: 'stats-footer'
-          },
-
-          h(
-            'div',
-            {
-              className: 'footer-stats'
-            },
-
-            h(
-              'div',
-              {
-                className: 'stat-item'
-              },
-              '📝 ',
-              lines.length,
-              ' ',
+        h('div', { className: 'stats-footer' },
+          h('div', { className: 'footer-stats' },
+            h('div', { className: 'stat-item' },
+              '📝 ', lines.length, ' ',
               lines.length === 1 ? 'line' : 'lines'
             ),
-
-            h(
-              'div',
-              {
-                className: 'stat-item'
-              },
-              '🔤 ',
-              totalChars,
-              ' chars'
+            h('div', { className: 'stat-item' },
+              '🔤 ', totalChars, ' chars'
             ),
-
-            h(
-              'div',
-              {
-                className: 'storage-note'
-              },
-              'autosaved'
-            )
+            h('div', { className: 'storage-note' }, 'autosaved')
           ),
-
-          h(
-            'div',
-            {
-              className: 'button-group'
-            },
-
-            h(
-              'button',
-              {
-                type: 'button',
-                className: 'clear-button',
-                onClick: handleClearAll
-              },
-              '🧹 Clear notes'
-            ),
-
-            h(
-              'button',
-              {
-                type: 'button',
-                className: 'clear-all-button',
-                onClick: handleClearAll
-              },
-              '🗑️ Clear All'
-            )
+          h('div', { className: 'button-group' },
+            h('button', {
+              type: 'button',
+              className: 'clear-button',
+              onClick: handleClearAll
+            }, '🧹 Clear notes'),
+            h('button', {
+              type: 'button',
+              className: 'clear-all-button',
+              onClick: handleClearAll
+            }, '🗑️ Clear All')
           )
         )
       );
     }
 
-    const root = ReactDOM.createRoot(
-      document.getElementById('root')
-    );
-
+    const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(h(App));
   </script>
 </body>
-  </html>
+</html>
